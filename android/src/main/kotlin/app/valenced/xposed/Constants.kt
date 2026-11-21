@@ -1,7 +1,17 @@
 package app.valenced.xposed
 
+import app.valenced.plugins.VersionRange
+
 object ValencedConstants {
     const val TARGET_PACKAGE = "com.discord"
+
+    /**
+     * Discord versions this module's hooks are known to work on, checked by [app.valenced.xposed.tweaks.discordVersionRetriever].
+     * Versions outside of it still load, but the user is warned.
+     *
+     * Keep it in sync with `DISCORD` in `android/patches`, which pins the version Valenced Manager patches.
+     */
+    val SUPPORTED_DISCORD_VERSIONS = VersionRange.parse(">=352.2 <353")
 
     const val FILES_DIR = "files/valenced"
     const val CACHE_DIR = "cache/valenced"
