@@ -13,7 +13,7 @@ pluginManagement {
 
 plugins {
     // Reseam engine version, keep in sync with Valenced/valenced-manager gradle/libs.versions.toml.
-    id("app.reseam.workspace") version "0.35.1"
+    id("app.reseam.workspace") version "1.0.1"
 }
 
 rootProject.name = "patches"
