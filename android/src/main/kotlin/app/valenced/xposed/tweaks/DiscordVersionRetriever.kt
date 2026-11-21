@@ -1,9 +1,12 @@
 package app.valenced.xposed.tweaks
 
+import android.app.AlertDialog
 import de.robv.android.xposed.XposedBridge.hookAllConstructors
 import de.robv.android.xposed.XposedHelpers
 import app.valenced.plugins.Version
 import app.valenced.xposed.DexFinder
+import app.valenced.xposed.Tweak
+import app.valenced.xposed.ValencedConstants
 import app.valenced.xposed.loadClassOrNull
 import app.valenced.xposed.methodHook
 import app.valenced.xposed.tweak
@@ -32,6 +35,7 @@ val discordVersionRetriever by tweak {
     // Plugins can't resolve their Discord dependency without a version, so fall back to 0.
     if (version == null) log.w("Unknown Discord version, using 0")
     DISCORD_VERSION = version ?: Version(listOf(0))
+    if (version != null) checkSupportedVersion(version)
 
     val updater = DiscordBundleUpdater(classLoader)
     val updaterClass = updater.updaterClass
@@ -56,6 +60,32 @@ val discordVersionRetriever by tweak {
             }
         }
     }.build())
+}
+
+/**
+ * Warns the user when Discord is outside of [ValencedConstants.SUPPORTED_DISCORD_VERSIONS].
+ * It doesn't stop Valenced from loading, since the module may still work on versions we haven't verified.
+ */
+private fun Tweak.checkSupportedVersion(version: Version) {
+    val supported = ValencedConstants.SUPPORTED_DISCORD_VERSIONS
+    if (supported.satisfies(version)) return
+
+    log.w("Discord $version is outside of the supported range ($supported)")
+    withAppActivity {
+        it.runOnUiThread {
+            AlertDialog.Builder(it)
+                .setTitle("Unsupported Discord version")
+                .setMessage(
+                    """
+                    Valenced ${ValencedConstants.LOADER_VERSION} supports Discord $supported, but you're running $version.
+
+                    Valenced may crash or some features may not work. Install a supported version of Discord or check for a Valenced update.
+                """.trimIndent()
+                )
+                .setPositiveButton(android.R.string.ok) { d, _ -> d.dismiss() }
+                .show()
+        }
+    }
 }
 
 /**
