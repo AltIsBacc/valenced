@@ -11,6 +11,7 @@ import app.valenced.plugins.pluginLog
 import app.valenced.plugins.repos.SourcesStore
 import app.valenced.plugins.toJSPayload
 import app.valenced.xposed.tweak
+import app.valenced.xposed.tweaks.plugins.external.DEX_CACHE_DIR
 import app.valenced.xposed.tweaks.plugins.internal.InternalPluginFlags
 import app.valenced.xposed.tweaks.plugins.internal.internalPluginOf
 import java.io.File
@@ -87,6 +88,7 @@ val pluginMethods by tweak {
 
         // Delete data from all slots.
         File(externalPluginsRoot(appInfo.dataDir), pluginId).deleteRecursively()
+        File(File(externalPluginsRoot(appInfo.dataDir), DEX_CACHE_DIR), pluginId).deleteRecursively()
         for (dir in pluginStorageDirsOfAllSlots(appInfo.dataDir, pluginId)) dir.deleteRecursively()
         PluginStatesStore.removePluginFromAllSlots(pluginPaths(appInfo.dataDir), pluginId)
         runCatching { SourcesStore.remove(pluginId) }

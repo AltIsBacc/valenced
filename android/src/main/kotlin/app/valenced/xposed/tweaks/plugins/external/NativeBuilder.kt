@@ -11,7 +11,7 @@ import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Member
 import java.lang.reflect.Modifier
 
-// lives next to the plugin directories.
+// Relocated copies of plugin jars, one directory per plugin. Lives next to the plugin directories.
 internal const val DEX_CACHE_DIR = ".dex-cache"
 
 internal val nativePluginLoaders = mutableMapOf<String, ClassLoader>()
@@ -34,10 +34,13 @@ internal fun loadNativeBuilder(
     // Android 14+ refuses to load a writable DEX file.
     jar.setReadOnly()
 
+    // The framework may obfuscate the Xposed API, which the plugin was compiled against under its original name.
+    val dex = relocateXposedApi(jar, File(dexCache, pluginId))
+
     // The parent must be the module class loader, which has the plugin API.
     val moduleLoader = PluginBuilder::class.java.classLoader!!
     val loader = DexClassLoader(
-        jar.absolutePath,
+        dex.absolutePath,
         dexCache.absolutePath,
         null,
         CompositeClassLoader(moduleLoader, depLoaders),
